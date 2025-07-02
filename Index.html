@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KitPOS</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        /* Navegación y Botones principales */
+        .main-nav {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .main-nav button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-nav button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        /* Secciones ocultas/mostradas */
+        .content-section {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Formularios y entradas */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="number"],
+        .input-group select {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box; /* Para incluir padding y borde en el ancho */
+        }
+
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px; /* Espacio entre botones */
+        }
+
+        .action-buttons button, .input-group button {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .action-buttons button:hover, .input-group button:hover {
+            background-color: #27ae60;
+        }
+
+        /* Estilos para las listas mostradas */
+        .list-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            border: 1px solid #c8d8dc;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .list-container h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #a9b9be;
+            padding-bottom: 8px;
+        }
+
+        .list-item {
+            background-color: #f8fcfc;
+            border: 1px solid #dde7e9;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+
+        .list-item:nth-child(even) {
+            background-color: #eef2f3;
+        }
+
+        /* Modulo de Ventas */
+        .ventas-buttons button {
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            margin-right: 15px;
+        }
+
+        .ventas-buttons button:hover {
+            background-color: #e67e22;
+        }
+
+        #sellForm button {
+            background-color: #3498db;
+            margin-top: 15px;
+        }
+
+        #sellForm button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Resumen de Venta / Ticket */
+        .ticket-summary {
+            background-color: #ffffff;
+            border: 2px dashed #95a5a6;
+            padding: 25px;
+            margin-top: 30px;
+            border-radius: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .ticket-summary h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .ticket-summary pre {
+            white-space: pre-wrap; /* Permite que el texto se ajuste */
+            word-wrap: break-word;
+        }
+
+        .ticket-summary .footer-message {
+            text-align: center;
+            margin-top: 20px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .ticket-summary .gift-message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #e74c3c;
+            font-size: 1.1em;
+        }
+
+        /* Estilos para dropdown */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-6.5%200-12.3%203.2-16.1%208.1-3.8%204.9-4.9%2011.8-3.3%2017.9l139%20182.2c3.9%205.1%209.7%208.1%2016.1%208.1h0c6.5%200%2012.3-3.2%2016.1-8.1L290.3%2095c1.7-6.1.6-13-3.3-17.9z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 12px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>KitPOS</h1>
+
+        <nav class="main-nav">
+            <button onclick="showSection('clients')">Clientes</button>
+            <button onclick="showSection('products')">Productos</button>
+            <button onclick="showSection('sales')">Ventas</button>
+        </nav>
+
+        <section id="clientsSection" class="content-section">
+            <h2>Gestión de Clientes</h2>
+            <div class="input-group">
+                <label for="clientDNI">DNI:</label>
+                <input type="text" id="clientDNI" placeholder="Ingrese DNI">
+            </div>
+            <div class="input-group">
+                <label for="clientNames">Nombres:</label>
+                <input type="text" id="clientNames" placeholder="Ingrese nombres">
+            </div>
+            <div class="input-group">
+                <label for="clientLastnames">Apellidos:</label>
+                <input type="text" id="clientLastnames" placeholder="Ingrese apellidos">
+            </div>
+            <div class="input-group">
+                <label for="clientPoints">Puntos (inicial):</label>
+                <input type="number" id="clientPoints" value="0" min="0">
+            </div>
+            <div class="action-buttons">
+                <button onclick="addClient()">Registrar Cliente</button>
+                <button onclick="displayClients()">Ver Clientes</button>
+            </div>
+            <div id="clientList" class="list-container" style="display: none;">
+                <h3>Lista de Clientes</h3>
+            </div>
+        </section>
+
+        <section id="productsSection" class="content-section">
+            <h2>Gestión de Productos</h2>
+            <div class="input-group">
+                <label for="productCode">Código:</label>
+                <input type="text" id="productCode" placeholder="Ingrese código del producto">
+            </div>
+            <div class="input-group">
+                <label for="productName">Nombre:</label>
+                <input type="text" id="productName" placeholder="Ingrese nombre del producto">
+            </div>
+            <div class="input-group">
+                <label for="productCategory">Categoría:</label>
+                <select id="productCategory">
+                    <option value="">Seleccione una categoría</option>
+                    <option value="panes">Panes</option>
+                    <option value="postres">Postres</option>
+                    <option value="abarrotes">Abarrotes</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="productPrice">Precio (S/):</label>
+                <input type="number" id="productPrice" min="0.01" step="0.01" placeholder="Precio del producto">
+            </div>
+            <div class="input-group">
+                <label for="productPoints">Puntos por compra:</label>
+                <input type="number" id="productPoints" value="0" min="0">
+            </div>
+            <div class="input-group">
+                <label for="productStock">Stock:</label>
+                <input type="number" id="productStock" value="0" min="0">
+            </div>
+            <div class="action-buttons">
+                <button onclick="addProduct()">Registrar Producto</button>
+                <button onclick="displayProducts()">Ver Productos</button>
+            </div>
+            <div id="productList" class="list-container" style="display: none;">
+                <h3>Lista de Productos</h3>
+            </div>
+        </section>
+
+        <section id="salesSection" class="content-section">
+            <h2>Gestión de Ventas</h2>
+            <div class="ventas-buttons">
+                <button onclick="showSalesList()">Ver Ventas</button>
+                <button onclick="startNewSale()">Vender</button>
+            </div>
+
+            <div id="salesListContainer" class="list-container" style="display: none;">
+                <h3>Lista de Ventas Realizadas</h3>
+            </div>
+
+            <div id="sellProductContainer" style="display: none; margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #f9f9f9;">
+                <h3>Realizar Venta</h3>
+                <div class="input-group">
+                    <label for="searchClientDNI">Buscar Cliente por DNI:</label>
+                    <input type="text" id="searchClientDNI" placeholder="Ingrese DNI del cliente">
+                    <button onclick="searchClientForSale()">Buscar Cliente</button>
+                </div>
+                <p id="clientSaleInfo" style="margin-top: 10px; font-weight: bold;"></p>
+
+                <div id="productSelectionSection" style="display: none;">
+                    <h4>Añadir Productos</h4>
+                    <div class="input-group">
+                        <label for="saleProductSelect">Producto:</label>
+                        <select id="saleProductSelect" onchange="displaySelectedProductInfo()"></select>
+                    </div>
+                    <p id="selectedProductPriceInfo" style="margin-top: 5px; font-weight: bold;"></p>
+                    <div class="input-group">
+                        <label for="productQuantity">Cantidad:</label>
+                        <input type="number" id="productQuantity" min="1" value="1">
+                    </div>
+                    <button onclick="addProductToSale()">Añadir al Carrito</button>
+
+                    <div id="currentSaleItems" style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                        <h4>Productos en el Carrito:</h4>
+                        <ul id="saleCartList" style="list-style: none; padding: 0;"></ul>
+                        <p style="font-weight: bold;">SubTotal Venta (sin IGV): S/ <span id="currentSaleSubtotal">0.00</span></p>
+                        <p style="font-weight: bold;">IGV (18%): S/ <span id="currentSaleIGV">0.00</span></p>
+                        <p style="font-weight: bold; color: #e74c3c; font-size: 1.2em;">Total a Pagar: S/ <span id="currentSaleTotal">0.00</span></p>
+                        <button onclick="completeSale(true)">Finalizar Venta</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="saleSummaryContainer" class="ticket-summary" style="display: none;">
+                <h3>Resumen de Compra</h3>
+                <pre id="saleSummaryContent"></pre>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Arreglos para almacenar datos
+        let clients = [];
+        let products = [];
+        let sales = [];
+        let currentSale = {
+            client: null,
+            items: [],
+            subtotal: 0,
+            igv: 0,
+            total: 0
+        };
+
+        const IGV_RATE = 0.18;
+
+        // Función para mostrar/ocultar secciones
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId + 'Section').classList.add('active');
+
+            // Ocultar listas y formularios específicos al cambiar de sección
+            document.getElementById('clientList').style.display = 'none';
+            document.getElementById('productList').style.display = 'none';
+            document.getElementById('salesListContainer').style.display = 'none';
+            document.getElementById('sellProductContainer').style.display = 'none';
+            document.getElementById('saleSummaryContainer').style.display = 'none';
+        }
+
+        // --- Funciones para Clientes ---
+        function addClient() {
+            const dni = document.getElementById('clientDNI').value.trim();
+            const names = document.getElementById('clientNames').value.trim();
+            const lastnames = document.getElementById('clientLastnames').value.trim();
+            const points = parseInt(document.getElementById('clientPoints').value);
+
+            if (!dni || !names || !lastnames || isNaN(points)) {
+                alert('Por favor, complete todos los campos de cliente correctamente.');
+                return;
+            }
+
+            // Verificar si el DNI ya existe
+            if (clients.some(client => client.dni === dni)) {
+                alert('Ya existe un cliente con este DNI.');
+                return;
+            }
+
+            clients.push({ dni, names, lastnames, points });
+            alert('Cliente registrado con éxito.');
+
+            // Limpiar campos
+            document.getElementById('clientDNI').value = '';
+            document.getElementById('clientNames').value = '';
+            document.getElementById('clientLastnames').value = '';
+            document.getElementById('clientPoints').value = '0';
+
+            // Preguntar si desea ingresar otro registro
+            askForMore('client');
+        }
+
+        function displayClients() {
+            const clientListDiv = document.getElementById('clientList');
+            clientListDiv.innerHTML = '<h3>Lista de Clientes</h3>';
+            if (clients.length === 0) {
+                clientListDiv.innerHTML += '<p>No hay clientes registrados.</p>';
+            } else {
+                clients.forEach(client => {
+                    const clientDiv = document.createElement('div');
+                    clientDiv.className = 'list-item';
+                    clientDiv.innerHTML = `<strong>DNI:</strong> ${client.dni}<br>
+                                           <strong>Nombres:</strong> ${client.names} ${client.lastnames}<br>
+                                           <strong>Puntos:</strong> ${client.points}`;
+                    clientListDiv.appendChild(clientDiv);
+                });
+            }
+            clientListDiv.style.display = 'block';
+        }
+
+        // --- Funciones para Productos ---
+        function addProduct() {
+            const code = document.getElementById('productCode').value.trim();
+            const name = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const points = parseInt(document.getElementById('productPoints').value);
+            const stock = parseInt(document.getElementById('productStock').value);
+
+            if (!code || !name || !category || isNaN(price) || isNaN(points) || isNaN(stock)) {
+                alert('Por favor, complete todos los campos de producto correctamente.');
+                return;
+            }
+            if (price <= 0 || stock < 0) {
+                alert('El precio debe ser mayor que 0 y el stock no puede ser negativo.');
+                return;
+            }
+
+            // Verificar si el código ya existe
+            if (products.some(product => product.code === code)) {
+                alert('Ya existe un producto con este código.');
+                return;
+            }
+
+            products.push({ code, name, category, price, points, stock });
+            alert('Producto registrado con éxito.');
+
+            // Limpiar campos
+            document.getElementById('productCode').value = '';
+            document.getElementById('productName').value = '';
+            document.getElementById('productCategory').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productPoints').value = '0';
+            document.getElementById('productStock').value = '0';
+
+            // Preguntar si desea ingresar otro registro
+            askForMore('product');
+        }
+
+        function displayProducts() {
+            const productListDiv = document.getElementById('productList');
+            productListDiv.innerHTML = '<h3>Lista de Productos</h3>';
+            if (products.length === 0) {
+                productListDiv.innerHTML += '<p>No hay productos registrados.</p>';
+            } else {
+                products.forEach(product => {
+                    const productDiv = document.createElement('div');
+                    productDiv.className = 'list-item';
+                    productDiv.innerHTML = `<strong>Código:</strong> ${product.code}<br>
+                                            <strong>Nombre:</strong> ${product.name}<br>
+                                            <strong>Categoría:</strong> ${product.category}<br>
+                                            <strong>Precio:</strong> S/ ${product.price.toFixed(2)}<br>
+                                            <strong>Puntos:</strong> ${product.points}<br>
+                                            <strong>Stock:</strong> ${product.stock}`;
+                    productListDiv.appendChild(productDiv);
+                });
+            }
+            productListDiv.style.display = 'block';
+        }
+
+        // --- Función para preguntar si desea ingresar más registros (para Clientes/Productos) ---
+        function askForMore(type) {
+            let response = '';
+            do {
+                response = prompt(`¿Deseas ingresar otro registro de ${type}? (S/N)`).toUpperCase();
+                if (response === 'S') {
+                    return; // Permite seguir en el formulario para un nuevo registro
+                } else if (response === 'N') {
+                    if (type === 'client') {
+                        displayClients();
+                    } else if (type === 'product') {
+                        displayProducts();
+                    }
+                    return; // Sale de la función
+                } else {
+                    alert('Respuesta inválida. Por favor, ingrese S o N.');
+                }
+            } while (response !== 'S' && response !== 'N');
+        }
+
+
+        // --- Funciones para Ventas ---
+        function showSalesList() {
+            hideAllSalesSubSections();
+            const salesListContainer = document.getElementById('salesListContainer');
+            salesListContainer.innerHTML = '<h3>Lista de Ventas Realizadas</h3>';
+            if (sales.length === 0) {
+                salesListContainer.innerHTML += '<p>No hay ventas realizadas.</p>';
+            } else {
+                sales.forEach(sale => {
+                    const saleDiv = document.createElement('div');
+                    saleDiv.className = 'list-item';
+                    let itemsHtml = '<ul>';
+                    sale.items.forEach(item => {
+                        itemsHtml += `<li>${item.quantity} x ${item.product.name} (S/${item.product.price.toFixed(2)} c/u)</li>`;
+                    });
+                    itemsHtml += '</ul>';
+
+                    saleDiv.innerHTML = `<strong>Fecha:</strong> ${new Date(sale.date).toLocaleString()}<br>
+                                         <strong>Cliente:</strong> ${sale.client.names} ${sale.client.lastnames} (DNI: ${sale.client.dni})<br>
+                                         <strong>Productos:</strong>${itemsHtml}
+                                         <strong>Total Venta:</strong> S/ ${sale.total.toFixed(2)}`;
+                    salesListContainer.appendChild(saleDiv);
+                });
+            }
+            salesListContainer.style.display = 'block';
+        }
+
+        function startNewSale() {
+            hideAllSalesSubSections();
+            document.getElementById('sellProductContainer').style.display = 'block';
+            document.getElementById('clientSaleInfo').textContent = '';
+            document.getElementById('searchClientDNI').value = '';
+            document.getElementById('productSelectionSection').style.display = 'none'; // Ocultar hasta buscar cliente
+            currentSale = {
+                client: null,
+                items: [],
+                subtotal: 0,
+                igv: 0,
+                total: 0
+            };
+            updateSaleCartDisplay();
+        }
+
+        function hideAllSalesSubSections() {
+            document.getElementById('salesListContainer').style.display = 'none';
+            document.getElementById('sellProductContainer').style.display = 'none';
+            document.getElementById('saleSummaryContainer').style.display = 'none';
+        }
+
+        function searchClientForSale() {
+            const dni = document.getElementById('searchClientDNI').value.trim();
+            const clientInfoSpan = document.getElementById('clientSaleInfo');
+            const productSelectionSection = document.getElementById('productSelectionSection');
+
+            const foundClient = clients.find(c => c.dni === dni);
+
+            if (foundClient) {
+                currentSale.client = foundClient;
+                clientInfoSpan.textContent = `Cliente: ${foundClient.names} ${foundClient.lastnames} (Puntos: ${foundClient.points})`;
+                productSelectionSection.style.display = 'block';
+                populateProductDropdown();
+            } else {
+                clientInfoSpan.textContent = 'Cliente no encontrado. Verifique el DNI.';
+                productSelectionSection.style.display = 'none';
+            }
+        }
+
+        function populateProductDropdown() {
+            const select = document.getElementById('saleProductSelect');
+            select.innerHTML = '<option value="">Seleccione un producto</option>';
+            products.forEach(product => {
+                if (product.stock > 0) { // Solo mostrar productos con stock disponible
+                    const option = document.createElement('option');
+                    option.value = product.code;
+                    option.textContent = `${product.name} (S/ ${product.price.toFixed(2)}, Stock: ${product.stock})`;
+                    select.appendChild(option);
+                }
+            });
+            document.getElementById('selectedProductPriceInfo').textContent = ''; // Limpiar info de precio
+        }
+
+        function displaySelectedProductInfo() {
+            const selectedCode = document.getElementById('saleProductSelect').value;
+            const productInfoSpan = document.getElementById('selectedProductPriceInfo');
+            const selectedProduct = products.find(p => p.code === selectedCode);
+
+            if (selectedProduct) {
+                productInfoSpan.textContent = `Precio: S/ ${selectedProduct.price.toFixed(2)} | Stock Disponible: ${selectedProduct.stock}`;
+            } else {
+                productInfoSpan.textContent = '';
+            }
+        }
+
+        function addProductToSale() {
+            const selectedCode = document.getElementById('saleProductSelect').value;
+            const quantity = parseInt(document.getElementById('productQuantity').value);
+
+            if (!selectedCode) {
+                alert('Por favor, seleccione un producto.');
+                return;
+            }
+            if (isNaN(quantity) || quantity <= 0) {
+                alert('La cantidad debe ser un número positivo.');
+                return;
+            }
+
+            const productToAdd = products.find(p => p.code === selectedCode);
+
+            if (productToAdd) {
+                if (quantity > productToAdd.stock) {
+                    alert(`No hay suficiente stock para ${productToAdd.name}. Stock disponible: ${productToAdd.stock}`);
+                    return;
+                }
+
+                // Verificar si el producto ya está en el carrito
+                const existingItem = currentSale.items.find(item => item.product.code === productToAdd.code);
+
+                if (existingItem) {
+                    // Si ya existe, solo actualizamos la cantidad
+                    if (existingItem.quantity + quantity > productToAdd.stock) {
+                        alert(`No puedes añadir más, excedes el stock disponible para ${productToAdd.name}.`);
+                        return;
+                    }
+                    existingItem.quantity += quantity;
+                } else {
+                    // Si no existe, lo añadimos como un nuevo ítem
+                    currentSale.items.push({ product: productToAdd, quantity: quantity });
+                }
+
+                updateSaleCartDisplay();
+                document.getElementById('productQuantity').value = '1'; // Resetear cantidad
+                document.getElementById('saleProductSelect').value = ''; // Resetear selección del dropdown
+                document.getElementById('selectedProductPriceInfo').textContent = ''; // Limpiar info de precio del producto seleccionado
+
+                // Preguntar si desea añadir más productos
+                let response = '';
+                do {
+                    response = prompt('¿Desea añadir más productos a la venta? (S/N)').toUpperCase();
+                    if (response === 'S') {
+                        // Si S, no hace nada, el usuario puede seguir añadiendo
+                        return;
+                    } else if (response === 'N') {
+                        completeSale(true); // Finaliza la venta
+                        return;
+                    } else {
+                        alert('Respuesta inválida. Por favor, ingrese S o N.');
+                    }
+                } while (response !== 'S' && response !== 'N');
+
+            } else {
+                alert('Producto no encontrado.');
+            }
+        }
+
+
+        function updateSaleCartDisplay() {
+            const cartList = document.getElementById('saleCartList');
+            cartList.innerHTML = '';
+            currentSale.subtotal = 0;
+
+            currentSale.items.forEach(item => {
+                const li = document.createElement('li');
+                const itemTotal = item.product.price * item.quantity;
+                currentSale.subtotal += itemTotal;
+                li.textContent = `${item.quantity} x ${item.product.name} (S/ ${item.product.price.toFixed(2)} c/u) = S/ ${itemTotal.toFixed(2)}`;
+                cartList.appendChild(li);
+            });
+
+            currentSale.igv = currentSale.subtotal * IGV_RATE;
+            currentSale.total = currentSale.subtotal + currentSale.igv;
+
+            document.getElementById('currentSaleSubtotal').textContent = currentSale.subtotal.toFixed(2);
+            document.getElementById('currentSaleIGV').textContent = currentSale.igv.toFixed(2);
+            document.getElementById('currentSaleTotal').textContent = currentSale.total.toFixed(2);
+        }
+
+        function completeSale(showConfirmation = false) {
+            if (!currentSale.client) {
+                alert('Por favor, busque y seleccione un cliente antes de finalizar la venta.');
+                return;
+            }
+            if (currentSale.items.length === 0) {
+                alert('No hay productos en el carrito para finalizar la venta.');
+                return;
+            }
+
+            if (showConfirmation) {
+                const confirmSale = confirm('¿Está seguro de finalizar la venta?');
+                if (!confirmSale) {
+                    return;
+                }
+            }
+
+
+            // Actualizar stock de productos
+            currentSale.items.forEach(item => {
+                const productInStock = products.find(p => p.code === item.product.code);
+                if (productInStock) {
+                    productInStock.stock -= item.quantity;
+                }
+            });
+
+            // Acumular puntos al cliente
+            let totalPointsEarned = 0;
+            currentSale.items.forEach(item => {
+                totalPointsEarned += item.product.points * item.quantity;
+            });
+            currentSale.client.points += totalPointsEarned;
+
+            // Guardar la venta
+            currentSale.date = new Date().toISOString(); // Guarda la fecha en formato ISO
+            sales.push({ ...currentSale }); // Clonar el objeto currentSale para guardar una instantánea
+
+            generateSaleSummary();
+            document.getElementById('sellProductContainer').style.display = 'none';
+            document.getElementById('saleSummaryContainer').style.display = 'block';
+
+            // Resetear para una nueva venta
+            currentSale = {
+                client: null,
+                items: [],
+                subtotal: 0,
+                igv: 0,
+                total: 0
+            };
+            populateProductDropdown(); // Actualizar el dropdown con el nuevo stock
+        }
+
+        function generateSaleSummary() {
+            const summaryContent = document.getElementById('saleSummaryContent');
+            const lastSale = sales[sales.length - 1]; // Obtener la última venta realizada
+
+            let summaryText = `Fecha: ${new Date(lastSale.date).toLocaleString()}\n`;
+            summaryText += `Código cliente: ${lastSale.client.dni}\n`;
+            summaryText += `Nombre cliente: ${lastSale.client.names} ${lastSale.client.lastnames}\n\n`;
+
+            summaryText += `Cantidad   CodProducto   Producto       ST (sin igv)\n`;
+            summaryText += `--------------------------------------------------\n`;
+            lastSale.items.forEach(item => {
+                const itemSubtotal = (item.product.price * item.quantity);
+                summaryText += `${item.quantity.toString().padEnd(10)} ${item.product.code.padEnd(13)} ${item.product.name.padEnd(14)} S/ ${itemSubtotal.toFixed(2)}\n`;
+            });
+
+            summaryText += `\n`;
+            summaryText += `                         Sub total: S/ ${lastSale.subtotal.toFixed(2)}\n`;
+            summaryText += `                         IGV (18%): S/ ${lastSale.igv.toFixed(2)}\n`;
+            summaryText += `                     Total a Pagar: S/ ${lastSale.total.toFixed(2)}\n\n`;
+            summaryText += `Gracias por su compra. Regrese pronto\n\n`;
+
+            let giftMessage = '';
+            if (lastSale.total > 100) {
+                giftMessage = 'Una torta de chocolate';
+            } else {
+                giftMessage = 'Un paquete de rosquillas';
+            }
+            summaryText += `Obsequio: ${giftMessage}\n`;
+            summaryContent.textContent = summaryText;
+        }
+
+        // Inicializar la vista al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            showSection('clients'); // Mostrar la sección de clientes por defecto al cargar
+        });
+    </script>
+</body>
+</html>
